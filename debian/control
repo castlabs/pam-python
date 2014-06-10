@@ -1,0 +1,30 @@
+Source: pam-python
+Section: python
+Priority: extra
+Maintainer: Russell Stuart <russell-debian@stuart.id.au>
+Build-Depends: debhelper (>= 7), python-all-dev (>= 2.2), python-sphinx,
+  libpam0g-dev | libpam-dev
+Standards-Version: 3.9.5
+Homepage:  http://pam-python.sourceforge.net/
+XS-Python-Version: >= 2.2
+
+Package: libpam-python
+Architecture: any
+Depends: ${misc:Depends}, ${shlibs:Depends}
+Suggests: libpam-python-doc
+Description: Enables PAM modules to be written in Python
+ This PAM module runs the Python interpreter, thus allowing PAM
+ modules to be written in Python.  As a Python incurs a considerable
+ overhead its intended audience is SysAdmins writing one off PAM
+ modules.  If you are doing that, you should probably install
+ the documentation in libpam-python-doc as well.
+
+Package: libpam-python-doc
+Section: doc
+Architecture: all
+Depends: ${misc:Depends}, libjs-jquery, libjs-underscore
+Recommends: libpam-python
+Description: Documentation for the bindings provided by libpam-python
+ The libpam-python PAM module runs the Python interpreter, thus allowing
+ PAM modules to be written in Python.  This package documents the bindings
+ provided by libpam-python.
