@@ -9,7 +9,7 @@ def pam_sm_authenticate(pamh, flags, argv):
   except pamh.exception, e:
     return e.pam_result
   if user == None:
-    pam.user = DEFAULT_USER
+    pamh.user = DEFAULT_USER
   return pamh.PAM_SUCCESS
 
 def pam_sm_setcred(pamh, flags, argv):

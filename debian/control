@@ -4,7 +4,7 @@ Priority: extra
 Maintainer: Russell Stuart <russell-debian@stuart.id.au>
 Build-Depends: debhelper (>= 7), python-all-dev (>= 2.2), python-sphinx,
   libpam0g-dev | libpam-dev
-Standards-Version: 3.9.5
+Standards-Version: 3.9.6
 Homepage:  http://pam-python.sourceforge.net/
 XS-Python-Version: >= 2.2
 

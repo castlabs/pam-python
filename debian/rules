@@ -6,6 +6,7 @@ DEB_HOST_MULTIARCH ?= $(shell dpkg-architecture -qDEB_HOST_MULTIARCH)
 BIN_PACKAGE	= libpam-python
 DOC_PACKAGE	= libpam-python-doc
 DOC_DIR		= usr/share/doc/$(DOC_PACKAGE)
+DEB_BUILD_MAINT_OPTIONS ?= hardening=+bindnow
 
 ME=$(shell sed 's,\([^ ]*\) .*,\1,;q' debian/changelog)
 
@@ -34,9 +35,9 @@ clean:
 .PHONY: build build-arch build-indep
 build: build-arch build-indep
 build-arch:
-	$(shell dpkg-buildflags --export=configure) $(MAKE) lib
+	$(shell DEB_BUILD_MAINT_OPTIONS="$(DEB_BUILD_MAINT_OPTIONS)" dpkg-buildflags --export=configure) $(MAKE) lib
 build-indep:
-	$(shell dpkg-buildflags --export=configure) $(MAKE) doc
+	$(shell DEB_BUILD_MAINT_OPTIONS="$(DEB_BUILD_MAINT_OPTIONS)" dpkg-buildflags --export=configure) $(MAKE) doc
 
 .PHONY: install install-arch install-indep
 install: install-arch install-indep

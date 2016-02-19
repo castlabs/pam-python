@@ -1,6 +1,16 @@
+pam-python (1.0.5-1) unstable; urgency=low
+
+  * New upstream.
+  * Bump standards version.
+
+ -- Russell Stuart <russell-debian@stuart.id.au>  Fri, 19 Feb 2016 20:51:53 +1000
+
 pam-python (1.0.4-1) unstable; urgency=low
 
   * New upstream, moved to AGPL-3.0.
+  * debian/rules now uses dpkg-buildflags to harden binary.
+    (Closes: #744156).
+  * Now ships examples.  (Closes: #686652).
 
  -- Russell Stuart <russell-debian@stuart.id.au>  Fri, 30 May 2014 06:31:46 +1000
 

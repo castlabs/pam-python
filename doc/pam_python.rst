@@ -120,8 +120,8 @@ described in the |PMWG|. All functions must return an integer,
 eg :const:`pamh.PAM_SUCCESS`. The valid return codes for each function are
 defined |PMWG|.   If the Python method isn't present
 |pam_python| will return :const:`pamh.PAM_SYMBOL_ERR` to PAM; if the method
-or doesn't return an integer or throws an exception
-:const:`pamh.PAM_SERVICE_ERR` is returned.
+doesn't return an integer or throws an exception :const:`pamh.PAM_SERVICE_ERR`
+is returned.
 
 There is one other method that in the Python PAM module
 that may be called by |pam_python|.
@@ -478,7 +478,7 @@ and then debug it as suggested above then there will be 2
 copies of your Python PAM module in memory -
 the imported one and the one PAM is using.
 If the PAM module sets a global variable you won't see it in the
-:keyword:`import`'ed one. Indeed, obtaining any sort of handle to the module the
+:keyword:`import`'ed one. Indeed, obtaining any sort of handle to the module
 PAM is using is near impossible. This means the debugger can inspect variables
 in the module only when a breakpoint has one of the modules functions in its
 backtrace.
