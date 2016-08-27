@@ -1,3 +1,12 @@
+pam-python (1.0.6-1) unstable; urgency=low
+
+  * New upstream.
+  * Add debian specific patch to link sphinx to python-doc instead
+    of online version.  (Closes: #833411).
+  * Bump standards version.
+
+ -- Russell Stuart <russell-debian@stuart.id.au>  Sat, 27 Aug 2016 21:37:03 +1000
+
 pam-python (1.0.5-1) unstable; urgency=low
 
   * New upstream.

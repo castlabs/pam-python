@@ -64,7 +64,7 @@ $(RELEASE_DIR)/release.stamp: $(RELEASE_SOURCES)
 	  sed -i "s/^\(static.*_date..[ 	]*=[ 	]*\"\)[^\"]*/\1$(RELEASE_DATE)/" "$${f}"; \
 	done
 	set -e; for f in $$(find . -name "*.py"); do \
-	  sed -i 's/^\(VERSION[ 	]*=[ 	]*"\)[^ ]*/\1$(RELEASE_VERSION)/' $${f}; \
+	  sed -i 's/^\(VERSION[ 	]*=[ 	]*"\)[^ "]*/\1$(RELEASE_VERSION)/' $${f}; \
 	  sed -i 's/^\(VERSION[ 	]*=[ 	]*"[^ ]* \+\)[^"]*/\1$(RELEASE_DATE)/' $${f}; \
 	done
 	set -e; for f in $$(find . -name "*.rst" -o -name "*.py" -o -name "Makefile*") README.txt; do \
@@ -160,6 +160,7 @@ upload-files: $(RELEASE_DIR)/release.stamp
 .PHONY: release-clean
 release-clean: release-project-clean
 	-[ "$(RELEASE_CLEAN_DONE)" = "yes" -o ! -d debian ] || RELEASE_CLEAN_DONE=yes debian/rules clean
+	[ ! -d .pc ] || { quilt pop -a; rm -r .pc; }
 	[ ! -f Makefile-automake ] || $(MAKE) maintainer-clean
 	rm -rf $(RELEASE_DIR) "$(RELEASE_PACKAGE_NAME).1.html"
 	rm -rf $$(find . -name "*.orig" -o -name ".*.sw?")

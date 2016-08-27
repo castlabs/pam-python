@@ -1,3 +1,9 @@
+pam-python-1.0.6 Sat, 27 Aug 2016 21:35:36 +1000
+
+  New: Update Makefile.release 
+  New: OSX support.
+  Bug: Fix debian bug #833411.
+
 pam-python-1.0.5 Fri, 19 Feb 2016 19:29:38 +1000
 
   New: Update Makefile.release 

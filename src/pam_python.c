@@ -32,10 +32,10 @@
 #ifndef __APPLE__
 #include <security/_pam_macros.h>
 #include <security/_pam_types.h>
-#define	_PAM_RETURN_VALUES	30	 // pam_constants.h
 #else
 #include <security/pam_appl.h>
 #include <security/pam_constants.h>
+#define	_PAM_RETURN_VALUES	30	 // pam_types.h
 #endif
 
 #undef	_POSIX_C_SOURCE
@@ -1941,7 +1941,7 @@ static PyObject* PamHandle_fail_delay(
 #else
   {
     PamHandleObject*	pamHandle = (PamHandleObject*)self;
-    int pam_result = pam_fail_delay(pamHandle->pamh, micro_sec);
+    pam_result = pam_fail_delay(pamHandle->pamh, micro_sec);
     if (check_pam_result(pamHandle, pam_result) == -1)
       goto error_exit;
   }
