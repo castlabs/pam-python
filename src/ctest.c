@@ -4,10 +4,15 @@
  *   gcc -O0 -g -Wall -o test -lpam test.c
  *   sudo ln -s $PWD/test-pam_python.pam /etc/pam.d
  *   ./ctest
- *   sudo rm /etc/pam.d/test-pam_python.pam 
+ *   sudo rm /etc/pam.d/test-pam_python.pam
  */
 #define	_GNU_SOURCE
+
+#ifdef __APPLE__
+#include <mach-o/dyld.h>
+#else
 #include <link.h>
+#endif
 #include <security/pam_appl.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -24,7 +29,7 @@ static int conv(
 {
   int		i;
 
-  appdata_ptr = appdata_ptr;
+  (void)appdata_ptr;
   *resp = malloc(num_msg * sizeof(**resp));
   for (i = 0; i < num_msg; i += 1)
   {
@@ -48,11 +53,26 @@ static void call_pam(
   *exit_status = 1;
 }
 
+#ifdef __APPLE__
+static void walk_dlls(struct walk_info* walk_info)
+{
+  int image_index;
+  walk_info->libpam_python_seen = 0;
+  walk_info->python_seen = 0;
+  for (image_index = 0; image_index < _dyld_image_count(); image_index += 1) {
+    const char* image_name = _dyld_get_image_name(image_index);
+    if (strstr(image_name, "/pam_python.so") != 0)
+      walk_info->libpam_python_seen = 1;
+    if (strstr(image_name, "/libpython") != 0)
+      walk_info->python_seen = 1;
+  }
+}
+#else
 static int dl_walk(struct dl_phdr_info* info, size_t size, void* data)
 {
   struct walk_info*		walk_info = data;
 
-  size = size;
+  (void)size;
   if (strstr(info->dlpi_name, "/pam_python.so") != 0)
     walk_info->libpam_python_seen = 1;
   if (strstr(info->dlpi_name, "/libpython") != 0)
@@ -66,6 +86,7 @@ static void walk_dlls(struct walk_info* walk_info)
   walk_info->python_seen = 0;
   dl_iterate_phdr(dl_walk, walk_info);
 }
+#endif
 
 int main(int argc, char **argv)
 {
@@ -75,8 +96,8 @@ int main(int argc, char **argv)
   struct walk_info	walk_info_before;
   struct walk_info	walk_info_after;
 
-  argc = argc;
-  argv = argv;
+  (void)argc;
+  (void)argv;
   if (access("/etc/pam.d/test-pam_python.pam", 0) != 0)
   {
     fprintf(
