@@ -1,3 +1,9 @@
+pam-python (1.0.7-1) unstable; urgency=high
+
+  * New upstream.
+
+ -- Russell Stuart <russell-debian@stuart.id.au>  Wed, 18 Sep 2019 20:25:13 +1000
+
 pam-python (1.0.6-1) unstable; urgency=low
 
   * New upstream.
