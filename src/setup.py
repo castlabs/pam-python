@@ -1,4 +1,4 @@
-#!/usr/bin/python -W default
+#!/usr/bin/python3 -W default
 import warnings; warnings.simplefilter('default')
 
 import distutils.sysconfig
@@ -25,7 +25,7 @@ classifiers = [
   "Topic :: Software Development :: Libraries :: Python Modules",
   "Topic :: System :: Systems Administration :: Authentication/Directory"]
 
-if not os.environ.has_key("Py_DEBUG"):
+if "Py_DEBUG" not in os.environ:
   Py_DEBUG = []
 else:
   Py_DEBUG = [('Py_DEBUG',1)]

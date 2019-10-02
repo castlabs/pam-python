@@ -1,4 +1,4 @@
-#!/usr/bin/python -W default
+#!/usr/bin/env python3
 #
 # This is the test script for libpython-pam.  There aren't many stones
 # left unturned.
@@ -68,7 +68,7 @@ def assert_results(expected_results, results):
 # Test all the calls happen.
 #
 def test_basic_calls(results, who, pamh, flags, argv):
-  results.append((who.func_name, flags, argv))
+  results.append((who.__name__, flags, argv))
   return pamh.PAM_SUCCESS
   
 def run_basic_calls(results):
@@ -82,13 +82,13 @@ def run_basic_calls(results):
   del pam
   me = os.path.join(os.getcwd(), __file__)
   expected_results = [
-      (pam_sm_authenticate.func_name, 0, [me]),
-      (pam_sm_acct_mgmt.func_name, 0, [me, 'arg1', 'arg2']),
-      (pam_sm_chauthtok.func_name, 16384, [me]),
-      (pam_sm_chauthtok.func_name, 8192, [me]),
-      (pam_sm_open_session.func_name, 0, [me]),
-      (pam_sm_close_session.func_name, 0, [me]),
-      (pam_sm_end.func_name, None, None)]
+      (pam_sm_authenticate.__name__, 0, [me]),
+      (pam_sm_acct_mgmt.__name__, 0, [me, 'arg1', 'arg2']),
+      (pam_sm_chauthtok.__name__, 16384, [me]),
+      (pam_sm_chauthtok.__name__, 8192, [me]),
+      (pam_sm_open_session.__name__, 0, [me]),
+      (pam_sm_close_session.__name__, 0, [me]),
+      (pam_sm_end.__name__, None, None)]
   assert_results(expected_results, results)
 
 #
@@ -170,7 +170,7 @@ PAM_CONSTANTS = {
     "PAM_DATA_REPLACE":			0x20000000,
   }
 def test_constants(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   if who != pam_sm_authenticate:
     return pamh.PAM_SUCCESS
   pam_constants = dict([
@@ -181,7 +181,7 @@ def test_constants(results, who, pamh, flags, argv):
   try:
     pamh.PAM_SUCCESS = 1
     results.append("Opps, pamh.PAM_SUCCESS = 1 worked!")
-  except StandardError, e:
+  except Exception as e:
     results.append("except: %s" % e)
   return pamh.PAM_SUCCESS
 
@@ -191,16 +191,16 @@ def run_constants(results):
   pam.authenticate(0)
   pam.close_session()
   del pam
-  assert results[0] == pam_sm_authenticate.func_name, (results[0], pam_sm_authenticate.func_name)
+  assert results[0] == pam_sm_authenticate.__name__, (results[0], pam_sm_authenticate.__name__)
   assert results[2] == "except: attribute 'PAM_SUCCESS' of 'PamHandle_type' objects is not writable", results[2]
-  assert results[3] == pam_sm_close_session.func_name, (results[3], pam_sm_close_session.func_name)
-  assert results[4] == pam_sm_end.func_name, (results[4], pam_sm_end.func_name)
+  assert results[3] == pam_sm_close_session.__name__, (results[3], pam_sm_close_session.__name__)
+  assert results[4] == pam_sm_end.__name__, (results[4], pam_sm_end.__name__)
   consts = results[1]
-  for var in PAM_CONSTANTS.keys():
-    assert consts.has_key(var), var
+  for var in list(PAM_CONSTANTS.keys()):
+    assert var in consts, var
     assert consts[var] == PAM_CONSTANTS[var], (var, consts[var], PAM_CONSTANTS[var])
-  for var in consts.keys():
-    assert PAM_CONSTANTS.has_key(var), var
+  for var in list(consts.keys()):
+    assert var in PAM_CONSTANTS, var
     assert PAM_CONSTANTS[var] == consts[var], (var, PAM_CONSTANTS[var], consts[var])
   assert len(results) == 5, len(results)
 
@@ -208,14 +208,14 @@ def run_constants(results):
 # Test the environment calls.
 #
 def test_environment(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   if who != pam_sm_acct_mgmt:
     return pamh.PAM_SUCCESS
   def test_exception(func):
     try:
       func()
       return str(None)
-    except Exception, e:
+    except Exception as e:
       return e.__class__.__name__ + ": " + str(e)
   #
   # A few things to test here.  First that PamEnv_as_mapping works.
@@ -239,17 +239,17 @@ def test_environment(results, who, pamh, flags, argv):
   pamh.env["xx"] = "x"
   results.append("not in" in pamh.env)
   results.append("xx" in pamh.env)
-  results.append(pamh.env.has_key("not in"))
-  results.append(pamh.env.has_key("xx"))
+  results.append("not in" in pamh.env)
+  results.append("xx" in pamh.env)
   results.append(test_exception(lambda: pamh.env.__getitem__("not in")))
   results.append(pamh.env.get("not in"))
   results.append(pamh.env.get("not in", "default"))
   results.append(pamh.env.get("xx"))
   results.append(pamh.env.get("xx", "default"))
   del pamh.env["x1"]
-  results.append(pamh.env.items())
-  results.append(pamh.env.keys())
-  results.append(pamh.env.values())
+  results.append(list(pamh.env.items()))
+  results.append(list(pamh.env.keys()))
+  results.append(list(pamh.env.values()))
   return pamh.PAM_SUCCESS
 
 def run_environment(results):
@@ -263,7 +263,7 @@ def run_environment(results):
   pam.close_session()
   del pam
   expected_results = [
-      pam_sm_authenticate.func_name, pam_sm_acct_mgmt.func_name,
+      pam_sm_authenticate.__name__, pam_sm_acct_mgmt.__name__,
       3, '1', 'y', 'z',
       'TypeError: PAM environment value must be a string',
       "KeyError: 'yy'",
@@ -276,14 +276,14 @@ def run_environment(results):
       [('x2', '2'), ('x3', '3'), ('xx', 'x')],
       ['x2', 'x3', 'xx'],
       ['2', '3', 'x'],
-      pam_sm_close_session.func_name, pam_sm_end.func_name]
+      pam_sm_close_session.__name__, pam_sm_end.__name__]
   assert_results(expected_results, results)
 
 #
 # Test strerror().
 #
 def test_strerror(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   if who != pam_sm_authenticate:
     return pamh.PAM_SUCCESS
   results.extend([(e, pamh.strerror(e).lower()) for e in (0, 1, 30, 31)])
@@ -295,19 +295,19 @@ def run_strerror(results):
   pam.authenticate(0)
   del pam
   expected_results = [
-      pam_sm_authenticate.func_name,
+      pam_sm_authenticate.__name__,
       ( 0, 'success'),
       ( 1, 'failed to load module'),
       (30, 'conversation is waiting for event'),
       (31, 'application needs to call libpam again'),
-      pam_sm_end.func_name]
+      pam_sm_end.__name__]
   assert_results(expected_results, results)
 
 #
 # Test items.
 #
 def test_items(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   if not who in (pam_sm_open_session, pam_sm_close_session):
     return pamh.PAM_SUCCESS
   items = {
@@ -321,9 +321,7 @@ def test_items(results, who, pamh, flags, argv):
 	"user":		"user-module",
 	"xdisplay":	"xdisplay-module",
       }
-  keys = items.keys()
-  keys.sort()
-  for key in keys:
+  for key in sorted(items.keys()):
     results.append((key, getattr(pamh, key)))
     value = items[key]
     if value != None:
@@ -331,7 +329,7 @@ def test_items(results, who, pamh, flags, argv):
   try:
     setattr(pamh, "tty", 1)
     results.append("%r = %r" % (key, value))
-  except StandardError, e:
+  except Exception as e:
     results.append("except: %s" % e)
   results.append(pamh.get_user("a prompt"))
   return pamh.PAM_SUCCESS
@@ -348,15 +346,13 @@ def run_items(results):
       9:	"user_prompt",
       11:	"xdisplay",
       13:	"authtok_type"}
-  items_list = items.keys()
-  items_list.sort()
-  for item in items_list:
+  for item in sorted(items.keys()):
     pam.set_item(item, items[item])
   pam.open_session()
   pam.close_session()
   del pam
   expected_results = [
-      pam_sm_authenticate.func_name, pam_sm_open_session.func_name,
+      pam_sm_authenticate.__name__, pam_sm_open_session.__name__,
       ('authtok',	None),
       ('authtok_type',	'authtok_type'),
       ('oldauthtok',	None),
@@ -368,7 +364,7 @@ def run_items(results):
       ('xdisplay',	'xdisplay'),
       'except: PAM item PAM_TTY must be set to a string',
       'user-module',
-      pam_sm_close_session.func_name,
+      pam_sm_close_session.__name__,
       ('authtok',	'authtok-module'),
       ('authtok_type',	'authtok_type-module'),
       ('oldauthtok',	'oldauthtok-module'),
@@ -380,14 +376,14 @@ def run_items(results):
       ('xdisplay',	'xdisplay-module'),
       'except: PAM item PAM_TTY must be set to a string',
       'user-module',
-      pam_sm_end.func_name]
+      pam_sm_end.__name__]
   assert_results(expected_results, results)
 
 #
 # Test the xauthdata item.
 #
 def test_xauthdata(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   if not who in (pam_sm_open_session, pam_sm_close_session):
     return pamh.PAM_SUCCESS
   xauthdata0 = pamh.XAuthData("name-module", "data-module")
@@ -397,12 +393,12 @@ def test_xauthdata(results, who, pamh, flags, argv):
   try:
     xauthdata2 = pamh.XAuthData(None, "x")
     results.append('pamh.XAuthData(%r, %r)' % (xauthdata2.name, xauthdata2.data))
-  except TypeError, e:
+  except TypeError as e:
     results.append('except: %s' % e)
   try:
     xauthdata2 = pamh.XAuthData("x", 1)
     results.append('pamh.XAuthData(%r, %r)' % (xauthdata2.name, xauthdata2.data))
-  except TypeError, e:
+  except TypeError as e:
     results.append('except: %s' % e)
   class XA: pass
   XA.name = "name-XA"
@@ -430,26 +426,26 @@ def run_xauthdata(results):
   pam.close_session()
   del pam
   expected_results = [
-      pam_sm_authenticate.func_name, pam_sm_open_session.func_name,
+      pam_sm_authenticate.__name__, pam_sm_open_session.__name__,
       ("name='name-module', data='data-module'"),
       'except: XAuthData() argument 1 must be string, not None',
       'except: XAuthData() argument 2 must be string, not int',
       ("name='name-XA', data='data-XA'"),
       ("name='name-xa', data='data-xa'"),
-      pam_sm_close_session.func_name,
+      pam_sm_close_session.__name__,
       ("name='name-module', data='data-module'"),
       'except: XAuthData() argument 1 must be string, not None',
       'except: XAuthData() argument 2 must be string, not int',
       ("name='name-XA', data='data-XA'"),
       ("name='name-xa', data='data-xa'"),
-      pam_sm_end.func_name]
+      pam_sm_end.__name__]
   assert_results(expected_results, results)
 
 #
 # Test having no pam_sm_end.
 #
 def test_no_sm_end(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   global pam_sm_end
   del pam_sm_end
   return pamh.PAM_SUCCESS
@@ -459,14 +455,14 @@ def run_no_sm_end(results):
   pam.start(TEST_PAM_MODULE, TEST_PAM_USER, pam_conv)
   pam.authenticate(0)
   del pam
-  expected_results = [pam_sm_authenticate.func_name]
+  expected_results = [pam_sm_authenticate.__name__]
   assert_results(expected_results, results)
 
 #
 # Test the conversation mechanism.
 #
 def test_conv(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   if who == pam_sm_end:
     return
   #
@@ -501,11 +497,11 @@ def run_conv(results):
   pam.acct_mgmt()
   del pam
   expected_results = [
-      pam_sm_authenticate.func_name,
+      pam_sm_authenticate.__name__,
       [('Prompt_echo_off', 1), ('Prompt_echo_on', 2), ('Error_msg', 3), ('Text_info', 4)],
-      pam_sm_acct_mgmt.func_name,
+      pam_sm_acct_mgmt.__name__,
       ('single', 1),
-      pam_sm_end.func_name]
+      pam_sm_end.__name__]
   assert_results(expected_results, results)
 
 #
@@ -521,7 +517,7 @@ def run_pamerr(results):
     results.append(err)
     try:
       pam.authenticate(0)
-    except PAM.error, e:
+    except PAM.error as e:
       results[-1] = -e.args[1]
   del pam
   expected_results = [-r for r in range(PAM._PAM_RETURN_VALUES)]
@@ -559,7 +555,7 @@ def test_exceptions(results, who, pamh, flags, argv):
     try:
       pamh.strerror(debug_magic + err)
       results.append(err)
-    except pamh.exception, e:
+    except pamh.exception as e:
       results.append((-e.pam_result,))
   return pamh.PAM_SUCCESS
 
@@ -576,7 +572,7 @@ def run_exceptions(results):
 # Test absent entry point.
 #
 def test_absent(results, who, pamh, flags, argv):
-  results.append(who.func_name)
+  results.append(who.__name__)
   if who != pam_sm_authenticate:
     return pamh.PAM_SUCCESS
   global pam_sm_acct_mgmt; del pam_sm_acct_mgmt
@@ -601,7 +597,7 @@ def run_absent(results):
     try:
       func(0)
       exception = None
-    except Exception, e:
+    except Exception as e:
       exception = e
     results.append((exception.__class__.__name__, str(exception)))
   del pam

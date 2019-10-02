@@ -8,10 +8,10 @@ LIBDIR ?= /lib/security
 pam_python.so: pam_python.c setup.py Makefile
 	@rm -f "$@"
 	@[ ! -e build -o build/lib.*/$@ -nt setup.py -a build/lib.*/$@ -nt Makefile ] || rm -r build
-	CFLAGS="$(WARNINGS) -I/usr/local/lib/ " ./setup.py build
+	CFLAGS="$(WARNINGS) -I/usr/local/lib/ -L/usr/lib/python3.5/config-3.5m-x86_64-linux-gnu $(pkg-config python3 --cflags --libs) " ./setup.py build
 	@#CFLAGS="-O0 $(WARNINGS)" ./setup.py build --debug
 	@#CFLAGS="-O0 $(WARNINGS)" Py_DEBUG=1 ./setup.py build --debug
-	ln -sf build/lib.*/$@ .
+	ln -sf build/lib.linux-x86_64-3.5/pam_python.cpython-35m-x86_64-linux-gnu.so pam_python.so
 
 .PHONY: install install-lib
 install: install-lib
@@ -38,7 +38,7 @@ test-pam_python.pam: test-pam_python.pam.in Makefile
 
 .PHONY: test
 test: pam_python.so ctest /etc/pam.d/test-pam_python.pam
-	python test.py
+	python3 test.py
 	./ctest
 
 test-pam_python-installed.pam: test-pam_python.pam.in Makefile
@@ -50,5 +50,5 @@ test-pam_python-installed.pam: test-pam_python.pam.in Makefile
 
 .PHONY: installed-test
 installed-test: ctest /etc/pam.d/test-pam_python-installed.pam
-	python test.py
+	python3 test.py
 	./ctest
