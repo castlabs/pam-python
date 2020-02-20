@@ -428,14 +428,14 @@ def run_xauthdata(results):
   expected_results = [
       pam_sm_authenticate.__name__, pam_sm_open_session.__name__,
       ("name='name-module', data='data-module'"),
-      'except: XAuthData() argument 1 must be string, not None',
-      'except: XAuthData() argument 2 must be string, not int',
+      'except: XAuthData() argument 1 must be str, not None',
+      'except: XAuthData() argument 2 must be str, not int',
       ("name='name-XA', data='data-XA'"),
       ("name='name-xa', data='data-xa'"),
       pam_sm_close_session.__name__,
       ("name='name-module', data='data-module'"),
-      'except: XAuthData() argument 1 must be string, not None',
-      'except: XAuthData() argument 2 must be string, not int',
+      'except: XAuthData() argument 1 must be str, not None',
+      'except: XAuthData() argument 2 must be str, not int',
       ("name='name-XA', data='data-XA'"),
       ("name='name-xa', data='data-xa'"),
       pam_sm_end.__name__]

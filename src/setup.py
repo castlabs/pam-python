@@ -33,12 +33,12 @@ else:
 libpython_so = distutils.sysconfig.get_config_var('INSTSONAME')
 ext_modules = [
     Extension(
-      "pam_python",
+      "pam_python3",
       sources=["pam_python.c"],
       include_dirs = [],
       library_dirs=[],
       define_macros=[('LIBPYTHON_SO','"'+libpython_so+'"')] + Py_DEBUG,
-      libraries=["pam","python%d.%d" % sys.version_info[:2]],
+      libraries=["pam"],
     ), ]
 
 setup(

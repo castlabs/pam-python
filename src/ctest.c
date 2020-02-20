@@ -61,7 +61,7 @@ static void walk_dlls(struct walk_info* walk_info)
   walk_info->python_seen = 0;
   for (image_index = 0; image_index < _dyld_image_count(); image_index += 1) {
     const char* image_name = _dyld_get_image_name(image_index);
-    if (strstr(image_name, "/pam_python.so") != 0)
+    if (strstr(image_name, "/pam_python3.so") != 0)
       walk_info->libpam_python_seen = 1;
     if (strstr(image_name, "/libpython") != 0)
       walk_info->python_seen = 1;
@@ -73,7 +73,7 @@ static int dl_walk(struct dl_phdr_info* info, size_t size, void* data)
   struct walk_info*		walk_info = data;
 
   (void)size;
-  if (strstr(info->dlpi_name, "/pam_python.so") != 0)
+  if (strstr(info->dlpi_name, "/pam_python3.so") != 0)
     walk_info->libpam_python_seen = 1;
   if (strstr(info->dlpi_name, "/libpython") != 0)
     walk_info->python_seen = 1;
@@ -130,7 +130,7 @@ int main(int argc, char **argv)
   printf("Testing dll load/unload ");
   if (!walk_info_before.libpam_python_seen)
   {
-    fprintf(stderr, "It looks like pam_python.so wasn't loaded!\n");
+    fprintf(stderr, "It looks like pam_python3.so wasn't loaded!\n");
     exit_status = 1;
   }
   else if (!walk_info_before.python_seen)
@@ -140,7 +140,7 @@ int main(int argc, char **argv)
   }
   else if (walk_info_after.libpam_python_seen)
   {
-    fprintf(stderr, "pam_python.so wasn't unloaded.\n");
+    fprintf(stderr, "pam_python3.so wasn't unloaded.\n");
     exit_status = 1;
   }
   else if (walk_info_after.python_seen)

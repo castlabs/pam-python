@@ -367,9 +367,13 @@ static int syslog_python2pam(PyObject* exception_type)
  */
 static const char* get_module_path(PamHandleObject* pamHandle)
 {
-  const char* result = PyModule_GetFilename(pamHandle->module);
-  if (result != 0)
-    return result;
+  PyObject* tmp = PyModule_GetFilenameObject(pamHandle->module);
+  if (tmp != 0) {
+    // WARNING: Hack, we rely on the module object being alive for the
+    //          lifetime of the returned string pointer...
+    Py_DECREF(tmp);
+    return PyUnicode_AsUTF8(tmp);
+  }
   return MODULE_NAME;
 }
 
@@ -743,7 +747,7 @@ static PyObject* PamXAuthData_new(
   static char*		kwlist[] = {"name", "data", 0};
 
   err = PyArg_ParseTupleAndKeywords(
-      args, kwds, "SS:XAuthData", kwlist,
+      args, kwds, "UU:XAuthData", kwlist,
       &name, &data);
   if (!err)
     goto error_exit;
@@ -828,7 +832,7 @@ static int PamHandle_set_item(
     value = 0;
   else
   {
-    value = PyUnicode_AsUTF8(pyValue);
+    value = (char *)PyUnicode_AsUTF8(pyValue);
     if (value == 0)
     {
       snprintf(
@@ -1039,7 +1043,6 @@ static const char* PamEnv_getkey(PyObject* key)
     PyErr_SetString(PyExc_TypeError, "PAM environment key must be a string");
     return 0;
   }
-  //result = PyUnicode_AS_STRING(key);
   result = PyUnicode_AsUTF8(key);
   if (*result == '\0')
   {
@@ -1129,7 +1132,6 @@ static int PamEnv_mp_assign(PyObject* self, PyObject* key, PyObject* value)
       goto error_exit;
     }
     strcat(strcat(strcpy(value_str, key_str), "="), PyUnicode_AsUTF8(value));
-    //strcat(strcat(strcpy(value_str, key_str), "="), PyUnicode_AS_STRING(value));
   }
   pam_result = pam_putenv(pamEnv->pamHandle->pamh, value_str);
   if (pam_result != PAM_SUCCESS) // PAM_BAD_ITEM in Linux = PAM_BUF_ERR,PAM_SYSTEM_ERR
