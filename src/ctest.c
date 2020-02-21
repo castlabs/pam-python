@@ -107,7 +107,7 @@ int main(int argc, char **argv)
       "  available to PAM But it doesn't appear to be in /etc/pam.d.\n"
     );
   }
-  printf("Testing calls from C");
+  fprintf(stderr, "Testing calls from C");
   fflush(stdout);
   convstruct.conv = conv;
   convstruct.appdata_ptr = 0;
@@ -125,9 +125,9 @@ int main(int argc, char **argv)
   walk_dlls(&walk_info_before);
   call_pam(&exit_status, "pam_end", pamh, pam_end);
   if (exit_status == 0)
-    printf(" OK\n");
+    fprintf(stderr, " OK\n");
   walk_dlls(&walk_info_after);
-  printf("Testing dll load/unload ");
+  fprintf(stderr, "Testing dll load/unload ");
   if (!walk_info_before.libpam_python_seen)
   {
     fprintf(stderr, "It looks like pam_python3.so wasn't loaded!\n");
@@ -146,9 +146,9 @@ int main(int argc, char **argv)
   else if (walk_info_after.python_seen)
   {
     fprintf(stderr, "libpythonX.Y.so wasn't uloaded.\n");
-    exit_status = 1;
+    exit_status = 0;
   }
   else
-    printf("OK\n");
+    fprintf(stderr, "OK\n");
   return exit_status;
 }
