@@ -8,10 +8,10 @@ LIBDIR ?= /lib/security
 pam_python3.so: pam_python.c setup.py Makefile
 	@rm -f "$@"
 	@[ ! -e build -o build/lib.*/$@ -nt setup.py -a build/lib.*/$@ -nt Makefile ] || rm -r build
-	python3 ./setup.py build
+	CFLAGS="$(WARNINGS)" python3 ./setup.py build
 	@#CFLAGS="-O0 $(WARNINGS)" python3 ./setup.py build --debug
 	@#CFLAGS="-O0 $(WARNINGS)" Py_DEBUG=1 python3 ./setup.py build --debug
-	ln -sf build/lib.linux-x86_64-3.7/pam_python3.cpython-37m-x86_64-linux-gnu.so pam_python3.so
+	ln -sf build/lib.*/pam_python3.*.so pam_python3.so
 
 .PHONY: install install-lib
 install: install-lib
