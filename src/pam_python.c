@@ -95,7 +95,7 @@ static void initialise_python(void)
   Py_DontWriteBytecodeFlag = 1;
   Py_IgnoreEnvironmentFlag = 1;
   /* Py_IsolatedFlag = 1; 		Python3 only */
-  Py_NoSiteFlag = 1;
+  Py_NoSiteFlag = 0;
   Py_NoUserSiteDirectory = 1;
   Py_InitializeEx(0);
 #else
