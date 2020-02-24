@@ -39,6 +39,7 @@
 #endif
 
 #undef	_POSIX_C_SOURCE
+#undef	_XOPEN_SOURCE
 
 #include <Python.h>
 #include <dlfcn.h>
@@ -1541,7 +1542,7 @@ static PyObject* PamHandle_get_XAUTHDATA(PyObject* self, void* closure)
       pamHandle->pamh, PAM_XAUTHDATA, (const void**)&xauth_data);
   if (check_pam_result(pamHandle, pam_result) == -1)
     goto error_exit;
-  if (xauth_data == 0)
+  if (xauth_data == 0 || (xauth_data->namelen == 0 && xauth_data->datalen == 0))
   {
     result = Py_None;
     Py_INCREF(result);
