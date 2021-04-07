@@ -41,6 +41,7 @@
 #undef	_POSIX_C_SOURCE
 #undef	_XOPEN_SOURCE
 
+#define PY_SSIZE_T_CLEAN
 #include <Python.h>
 #include <dlfcn.h>
 #include <signal.h>
@@ -538,7 +539,7 @@ static int syslog_path_traceback(
       "OOOOO", ptype, pvalue, ptraceback, Py_None, pamHandle->syslogFile);
   if (args != 0)
   {
-    py_resultobj = PyEval_CallObject(pamHandle->print_exception, args);
+    py_resultobj = PyObject_CallObject(pamHandle->print_exception, args);
     if (py_resultobj != 0)
       SyslogFile_flush(pamHandle->syslogFile);
   }
@@ -1126,7 +1127,7 @@ static int PamEnv_mp_assign(PyObject* self, PyObject* key, PyObject* value)
           PyExc_TypeError, "PAM environment value must be a string");
       goto error_exit;
     }
-    value_str = malloc(PyUnicode_GET_SIZE(key) + 1 + PyUnicode_GET_SIZE(value) + 1);
+    value_str = malloc(PyUnicode_GET_LENGTH(key) + 1 + PyUnicode_GET_LENGTH(value) + 1);
     if (value_str == 0)
     {
       PyErr_NoMemory();
@@ -1598,7 +1599,7 @@ static int PamHandle_set_XAUTHDATA(
     PyErr_NoMemory();
     goto error_exit;
   }
-  xauth_data.namelen = PyUnicode_GET_SIZE(name);
+  xauth_data.namelen = PyUnicode_GET_LENGTH(name);
   /*
    * Get the data.
    */
@@ -1617,7 +1618,7 @@ static int PamHandle_set_XAUTHDATA(
     PyErr_NoMemory();
     goto error_exit;
   }
-  xauth_data.datalen = PyUnicode_GET_SIZE(data);
+  xauth_data.datalen = PyUnicode_GET_LENGTH(data);
   /*
    * Set the item.  If that worked PAM will have swallowed the strings inside
    * of it, so we must not free them.
@@ -2759,7 +2760,7 @@ static int call_python_handler(
   /*
    * Call the Python handler function.
    */
-  py_resultobj = PyEval_CallObject(handler_function, handler_args);
+  py_resultobj = PyObject_CallObject(handler_function, handler_args);
   /*
    * Did it throw an exception?
    */

@@ -34,6 +34,9 @@ def pam_sm_chauthtok(pamh, flags, argv):
   return test(pam_sm_chauthtok, pamh, flags, argv)
 
 def test(who, pamh, flags, argv):
+  if not os.getcwd() in sys.path:
+    # Needed in python 3.9
+    sys.path.insert(0,os.getcwd())
   import test
   if not hasattr(test, "test_function"):# only true if not called via "main"
     return pamh.PAM_SUCCESS		# normally happens only if run by ctest
