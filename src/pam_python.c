@@ -48,6 +48,11 @@
 #include <structmember.h>
 #include <syslog.h>
 
+#ifndef __STRING
+#define __STRING(s) str_helper(s)
+#define str_helper(s) #s
+#endif
+
 #ifndef	MODULE_NAME
 #define	MODULE_NAME		"libpam_python"
 #endif
