@@ -17,7 +17,7 @@ pam_python3.so: pam_python.c setup.py Makefile
 install: install-lib
 install-lib:
 	mkdir -p $(DESTDIR)$(LIBDIR)
-	cp build/lib.*/pam_python3.*.so $(DESTDIR)$(LIBDIR)/pam-python3.so
+	cp build/lib.*/pam_python3.*.so $(DESTDIR)$(LIBDIR)/pam_python3.so
 
 .PHONY: clean
 clean:
