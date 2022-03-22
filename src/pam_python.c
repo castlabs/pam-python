@@ -2179,9 +2179,11 @@ static void cleanup_pamHandle(pam_handle_t* pamh, void* data, int error_status)
   PyObject*		handler_function = 0;
   int			py_initialized;
   static const char*	handler_name = "pam_sm_end";
+  PyGILState_STATE	gil_state = 0;
 
   (void)pamh;
   (void)error_status;
+  gil_state = PyGILState_Ensure();
   handler_function =
       PyObject_GetAttrString(pamHandle->module, (char*)handler_name);
   if (handler_function == 0)
@@ -2196,6 +2198,7 @@ static void cleanup_pamHandle(pam_handle_t* pamh, void* data, int error_status)
   py_xdecref(handler_function);
   py_initialized = pamHandle->py_initialized;
   Py_DECREF(pamHandle);
+  PyGILState_Release(gil_state);
   if (py_initialized)
   {
     pypam_initialize_count -= 1;
@@ -2771,11 +2774,12 @@ static int call_python_handler(
    */
   py_resultobj = PyObject_CallObject(handler_function, handler_args);
   /*
-   * Did it throw an exception?
+   * Did it throw an exception? PyErr_Occurred() may confirm this. but docs do no mention other NULL cases
    */
   if (py_resultobj == 0)
   {
     pam_result = syslog_traceback(pamHandle);
+    PyErr_Clear();
     goto error_exit;
   }
   *result = py_resultobj;
