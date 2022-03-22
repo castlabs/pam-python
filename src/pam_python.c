@@ -2424,6 +2424,7 @@ static int get_pamHandle(
   SyslogFileObject*	syslogFile = 0;
   PyObject*		tracebackModule = 0;
   int			pam_result;
+  PyGILState_STATE	gil_state = 0;
 
   /*
    * Figure out where the module lives.
@@ -2482,6 +2483,7 @@ static int get_pamHandle(
       initialise_python();
     pypam_initialize_count += 1;
   }
+  gil_state = PyGILState_Ensure();
   /*
    * Create a throw away module because heap types need one, apparently.
    */
@@ -2694,6 +2696,8 @@ error_exit:
   py_xdecref(pamHandle_module);
   py_xdecref((PyObject*)syslogFile);
   py_xdecref(tracebackModule);
+  if (gil_state)
+    PyGILState_Release(gil_state);
   return pam_result;
 }
 
@@ -2798,6 +2802,7 @@ static int call_handler(
   PamHandleObject*	pamHandle = 0;
   PyObject*		py_resultobj = 0;
   int			pam_result;
+  PyGILState_STATE	gil_state = 0;
 
   /*
    * Initialise Python, and get a copy of our object.
@@ -2805,6 +2810,7 @@ static int call_handler(
   pam_result = get_pamHandle(&pamHandle, pamh, argv);
   if (pam_result != PAM_SUCCESS)
     goto error_exit;
+  gil_state = PyGILState_Ensure();
   /*
    * See if the function we have to call has been defined.
    */
@@ -2837,6 +2843,8 @@ error_exit:
   py_xdecref(handler_function);
   py_xdecref((PyObject*)pamHandle);
   py_xdecref(py_resultobj);
+  if (gil_state)
+    PyGILState_Release(gil_state);
   return pam_result;
 }
 
