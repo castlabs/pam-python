@@ -233,6 +233,7 @@ typedef struct
   PyTypeObject*		response;	/* pamh.Response */
   PyObject*		syslogFile;	/* A (the) SyslogFile instance */
   PyTypeObject*		xauthdata;	/* pamh.XAuthData */
+  PyObject *    module_filename; /* result of PyModule_GetFilenameObject to cache utf-8 */
 } PamHandleObject;
 
 /*
@@ -374,14 +375,27 @@ static int syslog_python2pam(PyObject* exception_type)
  */
 static const char* get_module_path(PamHandleObject* pamHandle)
 {
-  PyObject* tmp = PyModule_GetFilenameObject(pamHandle->module);
-  if (tmp != 0) {
-    // WARNING: Hack, we rely on the module object being alive for the
-    //          lifetime of the returned string pointer...
-    Py_DECREF(tmp);
-    return PyUnicode_AsUTF8(tmp);
+  const char *result = NULL;
+  /* This function itself may cause exceptions, so we need to keep the state */
+  PyObject *ptype = NULL;
+  PyObject *pvalue = NULL;
+  PyObject *ptraceback = NULL;
+
+  if (pamHandle->module_filename) {
+    // already cached UTF-8, so it's cheap and safe
+    return PyUnicode_AsUTF8(pamHandle->module_filename);
   }
-  return MODULE_NAME;
+
+  PyErr_Fetch(&ptype, &pvalue, &ptraceback);
+  PyObject *tmp = PyModule_GetFilenameObject(pamHandle->module);
+  if (tmp != NULL) {
+    result = PyUnicode_AsUTF8(tmp);
+    if (result)
+      pamHandle->module_filename = tmp;
+  }
+  PyErr_Restore(ptype, pvalue, ptraceback);
+
+  return result? result : MODULE_NAME;
 }
 
 /*
@@ -2197,6 +2211,7 @@ static void cleanup_pamHandle(pam_handle_t* pamh, void* data, int error_status)
   py_xdecref(py_resultobj);
   py_xdecref(handler_function);
   py_initialized = pamHandle->py_initialized;
+  py_xdecref(pamHandle->module_filename);
   Py_DECREF(pamHandle);
   PyGILState_Release(gil_state);
   if (py_initialized)
