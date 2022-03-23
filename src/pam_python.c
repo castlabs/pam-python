@@ -2849,7 +2849,7 @@ static int call_handler(
   /*
    * It must return an integer.
    */
-  if (!PyLong_Check(py_resultobj) && !PyLong_Check(py_resultobj))
+  if (!PyLong_Check(py_resultobj))
   {
     pam_result = syslog_message(
 	pamHandle,
