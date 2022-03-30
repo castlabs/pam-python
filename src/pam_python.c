@@ -128,13 +128,11 @@ static void py_xdecref(PyObject* object)
 /*
  * Generic traverse function for heap objects.
  */
-static int generic_traverse(PyObject* self, visitproc visitor, void* arg)
+static int generic_traverse(PyObject* self, visitproc visit, void* arg)
 {
-  PyMemberDef*		member;
+  PyMemberDef*	member;
   int			member_visible;
-  PyObject*		object;
-  int			py_result;
-  PyObject**		slot;
+  PyObject**	slot;
 
   member = self->ob_type->tp_members;
   if (member == 0)
@@ -147,33 +145,16 @@ static int generic_traverse(PyObject* self, visitproc visitor, void* arg)
     for (; member->name != 0; member += 1)
     {
       if (member->type != T_OBJECT && member->type != T_OBJECT_EX)
-	continue;
+        continue;
       slot = (PyObject**)((char*)self + member->offset);
-      object = *slot;
-      if (object == 0)
-	continue;
-      py_result = visitor(object, arg);
-      if (py_result != 0)
-	return py_result;
+      Py_VISIT(*slot);
     }
     member += 1;
   }
+#if PY_VERSION_HEX >= 0x03090000
+  Py_VISIT(Py_TYPE(self));
+#endif
   return 0;
-}
-
-/*
- * Clear all slots in the object.
- */
-static void clear_slot(PyObject** slot)
-{
-  PyObject*		object;
-
-  object = *slot;
-  if (object != 0)
-  {
-    *slot = 0;
-    Py_DECREF(object);
-  }
 }
 
 static int generic_clear(PyObject* self)
@@ -192,8 +173,9 @@ static int generic_clear(PyObject* self)
     for (; member->name != 0; member += 1)
     {
       if (member->type != T_OBJECT && member->type != T_OBJECT_EX)
-	continue;
-      clear_slot((PyObject**)((char*)self + member->offset));
+        continue;
+      PyObject **offset = (PyObject**)((char*)self + member->offset);
+      Py_CLEAR(*offset);
     }
     member += 1;
   }
@@ -591,7 +573,7 @@ typedef struct
   PyObject*		msg;		/* struct pam_message.msg */
 } PamMessageObject;
 
-static char PamMessage_doc[] =
+static const char PamMessage_doc[] =
   MODULE_NAME "." PAMHANDLE_NAME "." PAMMESSAGE_NAME "(msg_style, msg)\n"
   "  Constructs an immutable object that can be passed to\n"
   "  " MODULE_NAME "." PAMHANDLE_NAME ".conversation().  The parameters are\n"
@@ -659,7 +641,7 @@ typedef struct
   int			resp_retcode;	/* struct pam_response.resp_retcode */
 } PamResponseObject;
 
-static char PamResponse_doc[] =
+static const char PamResponse_doc[] =
   MODULE_NAME "." PAMHANDLE_NAME "." PAMRESPONSE_NAME "(resp, resp_retcode)\n"
   "  Constructs an immutable object that is returned by\n"
   "  " MODULE_NAME "." PAMHANDLE_NAME ".conversation().  The parameters are\n"
@@ -731,7 +713,7 @@ typedef struct
   PyObject*		data;		/* struct pam_xauth_data.data */
 } PamXAuthDataObject;
 
-static char PamXAuthData_doc[] =
+static const char PamXAuthData_doc[] =
   MODULE_NAME "." PAMHANDLE_NAME "." PAMXAUTHDATA_NAME "(name, data)\n"
   "  Constructs an immutable object is returned by and can be passed to\n"
   "  the " MODULE_NAME ".xauthdata property.  The parameters are\n"
@@ -977,7 +959,7 @@ static PyObject* PamEnvIter_iternext(PyObject* self)
   return result;
 
 error_exit:
-  clear_slot((PyObject**)&pamEnvIter->env);
+  Py_CLEAR(pamEnvIter->env);
   return 0;
 }
 
@@ -2175,10 +2157,17 @@ static PyMemberDef PamHandle_Members[] =
     READONLY,
     "File like object that writes to syslog"
   },
+  {
+    "module_filename",
+    T_OBJECT_EX,
+    offsetof(PamHandleObject, module_filename),
+    READONLY,
+    "A cache of Python module file name"
+  },
   {0,0,0,0,0}		/* Sentinal */
 };
 
-static char PamHandle_Doc[] =
+static const char PamHandle_Doc[] =
   MODULE_NAME "." PAMHANDLE_NAME "\n"
   "  A an instance of this class makes the PAM API available to the Python\n"
   "  module.  It is the first argument to every method PAM calls in the module.";
@@ -2211,7 +2200,6 @@ static void cleanup_pamHandle(pam_handle_t* pamh, void* data, int error_status)
   py_xdecref(py_resultobj);
   py_xdecref(handler_function);
   py_initialized = pamHandle->py_initialized;
-  py_xdecref(pamHandle->module_filename);
   Py_DECREF(pamHandle);
   PyGILState_Release(gil_state);
   if (py_initialized)
@@ -2404,7 +2392,7 @@ static PyObject* newSingletonObject(
   PyObject*		module,		/* Module declaring type (required) */
   const char*		name,		/* tp_name (required) */
   int			basicsize,	/* tp_basicsize (required) */
-  char*			doc, 		/* tp_doc (optional) */
+  const char*			doc, 		/* tp_doc (optional) */
   inquiry		clear,		/* tp_clear (optional) */
   struct PyMethodDef*	methods,	/* tp_methods (optional) */
   struct PyMemberDef*	members,	/* tp_members (optional) */
@@ -2794,7 +2782,6 @@ static int call_python_handler(
   if (py_resultobj == 0)
   {
     pam_result = syslog_traceback(pamHandle);
-    PyErr_Clear();
     goto error_exit;
   }
   *result = py_resultobj;
