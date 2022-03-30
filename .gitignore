@@ -1,0 +1,6 @@
+doc/html/
+src/build/
+src/ctest
+src/pam_python*.so
+src/test-pam_python.pam
+*.swp
