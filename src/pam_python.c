@@ -2348,15 +2348,16 @@ static PyTypeObject* newHeapType(
   type->tp_flags = Py_TPFLAGS_DEFAULT|Py_TPFLAGS_HEAPTYPE|Py_TPFLAGS_HAVE_GC;
   type->tp_basicsize = basicsize;
   type->tp_dealloc = generic_dealloc;
-  if (doc != 0)
+  if (doc != NULL)
   {
-    char *doc_string = PyMem_Malloc(strlen(doc)+1);
-    if (doc_string == 0)
+    size_t len = strlen(doc)+1;
+    char *doc_string = PyObject_Malloc(len);
+    if (doc_string == NULL)
     {
       PyErr_NoMemory();
       goto error_exit;
     }
-    strcpy(doc_string, doc);
+    memcpy(doc_string, doc, len);
     type->tp_doc = doc_string;
   }
   type->tp_traverse = generic_traverse;
