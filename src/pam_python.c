@@ -77,18 +77,6 @@ const char libpam_python_date[]		= "2014-05-05";
 #define	PyCFunctionKwds_cast	(PyCFunction)(Py_ssize_t)
 
 /*
- * Add typedef for Py_ssize_t if it you have an older python.
- */
-#if (PY_VERSION_HEX < 0x02050000)
-typedef int Py_ssize_t;
-#endif
-
-/* Compatibility macros for Python 3 */
-#if PY_VERSION_HEX >= 0x03000000
-#define PyClass_Check(obj) PyObject_IsInstance(obj, (PyObject *)&PyType_Type)
-#endif
-
-/*
  * The python interpreter's shared library.
  */
 static char libpython_so[]	= LIBPYTHON_SO;
@@ -401,7 +389,7 @@ static int syslog_path_exception(const char* module_path, const char* errormsg)
    * Just print the exception in some recognisable form, hopefully.
    */
   syslog_open(module_path);
-  if (PyClass_Check(ptype))
+  if (PyObject_IsInstance(ptype, (PyObject *)&PyType_Type))
     stype = PyObject_GetAttrString(ptype, "__name__");
   else
   {
@@ -2366,11 +2354,7 @@ static PyTypeObject* newHeapType(
   type->tp_members = members;
   type->tp_getset = getset;
   type->tp_name = PyUnicode_AsUTF8(pyName);
-#if PY_VERSION_HEX < 0x02050000
-  ((PyHeapTypeObject*)type)->name = pyName;
-#else
   ((PyHeapTypeObject*)type)->ht_name = pyName;
-#endif
   pyName = 0;
   PyType_Ready(type);
   type->tp_new = new;
