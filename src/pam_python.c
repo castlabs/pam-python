@@ -2315,7 +2315,7 @@ static PyTypeObject* newHeapType(
   PyObject*		module,		/* Module declaring type (required) */
   const char*		name,		/* tp_name (required) */
   int			basicsize,	/* tp_basicsize (required) */
-  char*			doc, 		/* tp_doc (optional) */
+  const char*	doc, 		/* tp_doc (optional) */
   inquiry		clear,		/* tp_clear (optional) */
   struct PyMethodDef*	methods,	/* tp_methods (optional) */
   struct PyMemberDef*	members,	/* tp_members (optional) */
