@@ -3,7 +3,7 @@ all:	ctest pam_python3.so test-pam_python.pam
 WARNINGS=-Wall -Wextra -Wundef -Wshadow -Wpointer-arith -Wbad-function-cast -Wsign-compare -Waggregate-return -Wstrict-prototypes -Wmissing-prototypes -Wmissing-declarations -Werror
 #WARNINGS=-Wunreachable-code 	# Gcc 4.1 .. 4.4 are too buggy to make this useful
 
-LIBDIR ?= /lib/security
+LIBDIR ?= /lib64/security
 
 pam_python3.so: pam_python.c setup.py Makefile
 	@rm -f "$@"
@@ -30,7 +30,7 @@ ctest:	ctest.c Makefile
 	gcc -O0 $(WARNINGS) -g -o $@ ctest.c -lpam
 
 test-pam_python.pam: test-pam_python.pam.in Makefile
-	sed "s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp" 
+	sed "s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp"
 	mv $@.tmp $@
 
 /etc/pam.d/test-pam_python.pam: test-pam_python.pam
@@ -42,7 +42,7 @@ test: pam_python3.so ctest /etc/pam.d/test-pam_python.pam
 	./ctest
 
 test-pam_python-installed.pam: test-pam_python.pam.in Makefile
-	sed "s,\\\$$PWD/pam-python.so,pam-python.so,;s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp" 
+	sed "s,\\\$$PWD/pam-python.so,pam-python.so,;s,\\\$$PWD,$$(pwd),g" "$@.in" >"$@.tmp"
 	mv $@.tmp $@
 
 /etc/pam.d/test-pam_python-installed.pam: test-pam_python-installed.pam
